@@ -56,6 +56,13 @@ class MiniPiano():
         for port in ports:
             print(port)
 
+    def init_mixer(self):
+        freq = 44100  # audio CD quality
+        bitsize = -16  # unsigned 16 bit
+        channels = 2  # 1 is mono, 2 is stereo
+        buffer = 1024  # number of samples
+        pygame.mixer.init(freq, bitsize, channels, buffer)
+
     def setScale(self, scale_select):
 
             if (scale_select >= 1) and (scale_select <= 6):
@@ -79,7 +86,7 @@ class MiniPiano():
     def updateLEDs(self):
         send_string = ''.join(str(key) for key in self.key_light)
         self.serialComm.write(send_string.encode())
-        time.sleep(0.05)
+        time.sleep(0.1)
 
     def loop_LEDs(self):
         print("LED thread started")
@@ -100,6 +107,8 @@ class MiniPiano():
         """
         clock = pygame.time.Clock()
         midiSong = MidiFile(music_file)
+
+        self.init_mixer()
 
         self.exit = False
 
@@ -134,16 +143,18 @@ class MiniPiano():
                 if(msg.type in ['note_on','note_off']):
                     if msg.note:
                         octave = msg.note//12
+                        key = 25
                         # print(f"Octave: {octave}")
                         if scale == octave:
                             key = msg.note%12
                         elif scale == octave - 1:
                             key = msg.note%12 + 12
 
-                        if(msg.type == 'note_on' and msg.velocity > 0):
-                            self.key_light[key] = 1
-                        elif(msg.type == 'note_off' or msg.velocity == 0):
-                            self.key_light[key] = 0
+                        if 0 <= key and key <= 24:
+                            if msg.type == 'note_on' and msg.velocity > 0:
+                                self.key_light[key] = 1
+                            elif msg.type == 'note_off' or msg.velocity == 0:
+                                self.key_light[key] = 0
 
                         # print(msg.note)
                         # if(msg.type == 'note_on' and msg.velocity > 0):
@@ -156,7 +167,7 @@ class MiniPiano():
                     break
 
             for i, keys in enumerate(self.key_light):
-                    self.key_light[i] = 0
+                self.key_light[i] = 0
             time.sleep(0.1)
             self.exit = True
 
@@ -187,7 +198,7 @@ class MiniPiano():
                 game = int(input("Enter your choice: "))
             except ValueError:
                 print("Invalid input! Please enter a number.")
-                pass
+                continue
 
             if game == 3:
                 print("\n ")

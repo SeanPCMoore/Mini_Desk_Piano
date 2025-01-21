@@ -1,3 +1,13 @@
+/*
+* File: Arduino_Code
+*
+* Author: Seam Moore
+*
+* Happy Birthday Aoife!
+* I'M USING GITHUB!!!!!
+* - Sean
+*/
+
 #include <FastLED.h>
 
 #define LED_Count 144
